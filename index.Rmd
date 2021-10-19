@@ -19,15 +19,18 @@ tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
 
 ## Data Wrangling, Exploration, Visualization
 
-### Name and EID here
+### Adriana Banchs, amb8722
 
 #### Introduction 
 
-Paragraph or two introducing your datasets and variables, why they are interesting to you, etc.
+Paragraph or two introducing your data sets and variables, why they are interesting to you, etc.
 
 ```{R}
-# read your datasets in here, e.g., with read_csv()
+library(tidyverse)
+happy <- read_csv("happy.csv")
+profile <- read_csv("profile.csv")
 
+head(happy)
 ```
 
 #### Tidying: Reshaping
