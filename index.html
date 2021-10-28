@@ -1537,43 +1537,407 @@ div.tocify {
 <h3>Adriana Banchs, amb8722</h3>
 <div id="introduction" class="section level4">
 <h4>Introduction</h4>
+<p>The data sets used for this project are the World Happiness Report and Socio-Economic Country Profiles. Both of the data are from 2017, so the values can be more easily compared. The World Happiness Report contains</p>
 <p>Paragraph or two introducing your data sets and variables, why they are interesting to you, etc.</p>
 <pre class="r"><code>library(tidyverse)
+library(knitr)
 happy &lt;- read_csv(&quot;happy.csv&quot;)
 profile &lt;- read_csv(&quot;profile.csv&quot;)
 
-head(happy)</code></pre>
-<pre><code>## # A tibble: 6 x 12
-##   Country Happiness.Rank Happiness.Score Whisker.high Whisker.low
-##   &lt;chr&gt;            &lt;dbl&gt;           &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;
-## 1 Norway               1            7.54         7.59        7.48
-## 2 Denmark              2            7.52         7.58        7.46
-## 3 Iceland              3            7.50         7.62        7.39
-## 4 Switze…              4            7.49         7.56        7.43
-## 5 Finland              5            7.47         7.53        7.41
-## 6 Nether…              6            7.38         7.43        7.33
-## # … with 7 more variables: Economy..GDP.per.Capita. &lt;dbl&gt;, Family &lt;dbl&gt;,
-## #   Health..Life.Expectancy. &lt;dbl&gt;, Freedom &lt;dbl&gt;, Generosity &lt;dbl&gt;,
-## #   Trust..Government.Corruption. &lt;dbl&gt;, Dystopia.Residual &lt;dbl&gt;</code></pre>
+profile %&gt;% distinct(country)</code></pre>
+<pre><code>## # A tibble: 229 x 1
+##    country            
+##    &lt;chr&gt;              
+##  1 Afghanistan        
+##  2 Albania            
+##  3 Algeria            
+##  4 American Samoa     
+##  5 Andorra            
+##  6 Angola             
+##  7 Anguilla           
+##  8 Antigua and Barbuda
+##  9 Argentina          
+## 10 Armenia            
+## # … with 219 more rows</code></pre>
 </div>
 <div id="tidying-reshaping" class="section level4">
 <h4>Tidying: Reshaping</h4>
 <p>If your datasets are tidy already, demonstrate that you can reshape data with pivot wider/longer here (e.g., untidy and then retidy). Alternatively, it may be easier to wait until the wrangling section so you can reshape your summary statistics. Note here if you are going to do this.</p>
-<pre class="r"><code># your tidying code (if applicable; can also wait until
-# wrangling section)</code></pre>
+<pre class="r"><code># untidying
+untidy_profile &lt;- profile %&gt;% pivot_wider(names_from = &quot;Region&quot;, 
+    values_from = &quot;country&quot;) %&gt;% select(49:70, everything())
+untidy_profile</code></pre>
+<pre><code>## # A tibble: 229 x 70
+##    SouthernAsia SouthernEurope NorthernAfrica Polynesia MiddleAfrica Caribbean
+##    &lt;chr&gt;        &lt;chr&gt;          &lt;chr&gt;          &lt;chr&gt;     &lt;chr&gt;        &lt;chr&gt;    
+##  1 Afghanistan  &lt;NA&gt;           &lt;NA&gt;           &lt;NA&gt;      &lt;NA&gt;         &lt;NA&gt;     
+##  2 &lt;NA&gt;         Albania        &lt;NA&gt;           &lt;NA&gt;      &lt;NA&gt;         &lt;NA&gt;     
+##  3 &lt;NA&gt;         &lt;NA&gt;           Algeria        &lt;NA&gt;      &lt;NA&gt;         &lt;NA&gt;     
+##  4 &lt;NA&gt;         &lt;NA&gt;           &lt;NA&gt;           American… &lt;NA&gt;         &lt;NA&gt;     
+##  5 &lt;NA&gt;         Andorra        &lt;NA&gt;           &lt;NA&gt;      &lt;NA&gt;         &lt;NA&gt;     
+##  6 &lt;NA&gt;         &lt;NA&gt;           &lt;NA&gt;           &lt;NA&gt;      Angola       &lt;NA&gt;     
+##  7 &lt;NA&gt;         &lt;NA&gt;           &lt;NA&gt;           &lt;NA&gt;      &lt;NA&gt;         Anguilla 
+##  8 &lt;NA&gt;         &lt;NA&gt;           &lt;NA&gt;           &lt;NA&gt;      &lt;NA&gt;         Antigua …
+##  9 &lt;NA&gt;         &lt;NA&gt;           &lt;NA&gt;           &lt;NA&gt;      &lt;NA&gt;         &lt;NA&gt;     
+## 10 &lt;NA&gt;         &lt;NA&gt;           &lt;NA&gt;           &lt;NA&gt;      &lt;NA&gt;         &lt;NA&gt;     
+## # … with 219 more rows, and 64 more variables: SouthAmerica &lt;chr&gt;,
+## #   WesternAsia &lt;chr&gt;, Oceania &lt;chr&gt;, WesternEurope &lt;chr&gt;, EasternEurope &lt;chr&gt;,
+## #   CentralAmerica &lt;chr&gt;, WesternAfrica &lt;chr&gt;, NorthernAmerica &lt;chr&gt;,
+## #   SouthernAfrica &lt;chr&gt;, `South-easternAsia` &lt;chr&gt;, EasternAfrica &lt;chr&gt;,
+## #   NorthernEurope &lt;chr&gt;, EasternAsia &lt;chr&gt;, Melanesia &lt;chr&gt;, Micronesia &lt;chr&gt;,
+## #   CentralAsia &lt;chr&gt;, `Surface area (km2)` &lt;chr&gt;, `Population in thousands
+## #   (2017)` &lt;dbl&gt;, `Population density (per km2, 2017)` &lt;dbl&gt;, `Sex ratio (m
+## #   per 100 f, 2017)` &lt;dbl&gt;, `GDP: Gross domestic product (million current
+## #   US$)` &lt;dbl&gt;, `GDP growth rate (annual %, const. 2005 prices)` &lt;chr&gt;, `GDP
+## #   per capita (current US$)` &lt;dbl&gt;, `Economy: Agriculture (% of GVA)` &lt;chr&gt;,
+## #   `Economy: Industry (% of GVA)` &lt;dbl&gt;, `Economy: Services and other activity
+## #   (% of GVA)` &lt;dbl&gt;, `Employment: Agriculture (% of employed)` &lt;chr&gt;,
+## #   `Employment: Industry (% of employed)` &lt;chr&gt;, `Employment: Services (% of
+## #   employed)` &lt;chr&gt;, `Unemployment (% of labour force)` &lt;chr&gt;, `Labour force
+## #   participation (female/male pop. %)` &lt;chr&gt;, `Agricultural production index
+## #   (2004-2006=100)` &lt;dbl&gt;, `Food production index (2004-2006=100)` &lt;dbl&gt;,
+## #   `International trade: Exports (million US$)` &lt;chr&gt;, `International trade:
+## #   Imports (million US$)` &lt;chr&gt;, `International trade: Balance (million
+## #   US$)` &lt;chr&gt;, `Balance of payments, current account (million US$)` &lt;chr&gt;,
+## #   `Population growth rate (average annual %)` &lt;chr&gt;, `Urban population (% of
+## #   total population)` &lt;dbl&gt;, `Urban population growth rate (average annual
+## #   %)` &lt;chr&gt;, `Fertility rate, total (live births per woman)` &lt;chr&gt;, `Life
+## #   expectancy at birth (females/males, years)` &lt;chr&gt;, `Population age
+## #   distribution (0-14 / 60+ years, %)` &lt;chr&gt;, `International migrant stock
+## #   (000/% of total pop.)` &lt;chr&gt;, `Refugees and others of concern to UNHCR (in
+## #   thousands)` &lt;chr&gt;, `Infant mortality rate (per 1000 live births` &lt;chr&gt;,
+## #   `Health: Total expenditure (% of GDP)` &lt;dbl&gt;, `Health: Physicians (per 1000
+## #   pop.)` &lt;chr&gt;, `Education: Government expenditure (% of GDP)` &lt;chr&gt;,
+## #   `Education: Primary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;,
+## #   `Education: Secondary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;,
+## #   `Education: Tertiary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;, `Seats
+## #   held by women in national parliaments %` &lt;dbl&gt;, `Mobile-cellular
+## #   subscriptions (per 100 inhabitants)` &lt;chr&gt;, `Mobile-cellular subscriptions
+## #   (per 100 inhabitants)_1` &lt;chr&gt;, `Individuals using the Internet (per 100
+## #   inhabitants)` &lt;dbl&gt;, `Threatened species (number)` &lt;chr&gt;, `Forested area (%
+## #   of land area)` &lt;chr&gt;, `CO2 emission estimates (million tons/tons per
+## #   capita)` &lt;dbl&gt;, `Energy production, primary (Petajoules)` &lt;dbl&gt;, `Energy
+## #   supply per capita (Gigajoules)` &lt;chr&gt;, `Pop. using improved drinking water
+## #   (urban/rural, %)` &lt;chr&gt;, `Pop. using improved sanitation facilities
+## #   (urban/rural, %)` &lt;chr&gt;, `Net Official Development Assist. received (% of
+## #   GNI)` &lt;dbl&gt;</code></pre>
+<pre class="r"><code>untidy_happy &lt;- happy %&gt;% pivot_wider(names_from = &quot;Happiness.Rank&quot;, 
+    values_from = &quot;Country&quot;) %&gt;% select(11:165, everything())
+untidy_happy</code></pre>
+<pre><code>## # A tibble: 155 x 165
+##    `1`   `2`   `3`   `4`   `5`   `6`   `7`   `8`   `9`   `10`  `11`  `12`  `13` 
+##    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+##  1 Norw… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+##  2 &lt;NA&gt;  Denm… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+##  3 &lt;NA&gt;  &lt;NA&gt;  Icel… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+##  4 &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  Swit… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+##  5 &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  Finl… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+##  6 &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  Neth… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+##  7 &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  Cana… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+##  8 &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  New … &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+##  9 &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  Swed… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+## 10 &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  Aust… &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
+## # … with 145 more rows, and 152 more variables: `14` &lt;chr&gt;, `15` &lt;chr&gt;,
+## #   `16` &lt;chr&gt;, `17` &lt;chr&gt;, `18` &lt;chr&gt;, `19` &lt;chr&gt;, `20` &lt;chr&gt;, `21` &lt;chr&gt;,
+## #   `22` &lt;chr&gt;, `23` &lt;chr&gt;, `24` &lt;chr&gt;, `25` &lt;chr&gt;, `26` &lt;chr&gt;, `27` &lt;chr&gt;,
+## #   `28` &lt;chr&gt;, `29` &lt;chr&gt;, `30` &lt;chr&gt;, `31` &lt;chr&gt;, `32` &lt;chr&gt;, `33` &lt;chr&gt;,
+## #   `34` &lt;chr&gt;, `35` &lt;chr&gt;, `36` &lt;chr&gt;, `37` &lt;chr&gt;, `38` &lt;chr&gt;, `39` &lt;chr&gt;,
+## #   `40` &lt;chr&gt;, `41` &lt;chr&gt;, `42` &lt;chr&gt;, `43` &lt;chr&gt;, `44` &lt;chr&gt;, `45` &lt;chr&gt;,
+## #   `46` &lt;chr&gt;, `47` &lt;chr&gt;, `48` &lt;chr&gt;, `49` &lt;chr&gt;, `50` &lt;chr&gt;, `51` &lt;chr&gt;,
+## #   `52` &lt;chr&gt;, `53` &lt;chr&gt;, `54` &lt;chr&gt;, `55` &lt;chr&gt;, `56` &lt;chr&gt;, `57` &lt;chr&gt;,
+## #   `58` &lt;chr&gt;, `59` &lt;chr&gt;, `60` &lt;chr&gt;, `61` &lt;chr&gt;, `62` &lt;chr&gt;, `63` &lt;chr&gt;,
+## #   `64` &lt;chr&gt;, `65` &lt;chr&gt;, `66` &lt;chr&gt;, `67` &lt;chr&gt;, `68` &lt;chr&gt;, `69` &lt;chr&gt;,
+## #   `70` &lt;chr&gt;, `71` &lt;chr&gt;, `72` &lt;chr&gt;, `73` &lt;chr&gt;, `74` &lt;chr&gt;, `75` &lt;chr&gt;,
+## #   `76` &lt;chr&gt;, `77` &lt;chr&gt;, `78` &lt;chr&gt;, `79` &lt;chr&gt;, `80` &lt;chr&gt;, `81` &lt;chr&gt;,
+## #   `82` &lt;chr&gt;, `83` &lt;chr&gt;, `84` &lt;chr&gt;, `85` &lt;chr&gt;, `86` &lt;chr&gt;, `87` &lt;chr&gt;,
+## #   `88` &lt;chr&gt;, `89` &lt;chr&gt;, `90` &lt;chr&gt;, `91` &lt;chr&gt;, `92` &lt;chr&gt;, `93` &lt;chr&gt;,
+## #   `94` &lt;chr&gt;, `95` &lt;chr&gt;, `96` &lt;chr&gt;, `97` &lt;chr&gt;, `98` &lt;chr&gt;, `99` &lt;chr&gt;,
+## #   `100` &lt;chr&gt;, `101` &lt;chr&gt;, `102` &lt;chr&gt;, `103` &lt;chr&gt;, `104` &lt;chr&gt;,
+## #   `105` &lt;chr&gt;, `106` &lt;chr&gt;, `107` &lt;chr&gt;, `108` &lt;chr&gt;, `109` &lt;chr&gt;,
+## #   `110` &lt;chr&gt;, `111` &lt;chr&gt;, `112` &lt;chr&gt;, `113` &lt;chr&gt;, …</code></pre>
+<pre class="r"><code># retidying
+untidy_profile %&gt;% pivot_longer(1:22, names_to = &quot;Region&quot;, values_to = &quot;country&quot;) %&gt;% 
+    select(country, Region, everything()) %&gt;% na.omit()</code></pre>
+<pre><code>## # A tibble: 229 x 50
+##    country Region `Surface area (… `Population in … `Population den…
+##    &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;                       &lt;dbl&gt;            &lt;dbl&gt;
+##  1 Afghan… South… 652864                      35530             54.4
+##  2 Albania South… 28748                        2930            107. 
+##  3 Algeria North… 2381741                     41318             17.3
+##  4 Americ… Polyn… 199                            56            278. 
+##  5 Andorra South… 468                            77            164. 
+##  6 Angola  Middl… 1246700                     29784             23.9
+##  7 Anguil… Carib… 91                             15            166. 
+##  8 Antigu… Carib… 442                           102            232. 
+##  9 Argent… South… 2780400                     44271             16.2
+## 10 Armenia Weste… 29743                        2930            103. 
+## # … with 219 more rows, and 45 more variables: `Sex ratio (m per 100 f,
+## #   2017)` &lt;dbl&gt;, `GDP: Gross domestic product (million current US$)` &lt;dbl&gt;,
+## #   `GDP growth rate (annual %, const. 2005 prices)` &lt;chr&gt;, `GDP per capita
+## #   (current US$)` &lt;dbl&gt;, `Economy: Agriculture (% of GVA)` &lt;chr&gt;, `Economy:
+## #   Industry (% of GVA)` &lt;dbl&gt;, `Economy: Services and other activity (% of
+## #   GVA)` &lt;dbl&gt;, `Employment: Agriculture (% of employed)` &lt;chr&gt;, `Employment:
+## #   Industry (% of employed)` &lt;chr&gt;, `Employment: Services (% of
+## #   employed)` &lt;chr&gt;, `Unemployment (% of labour force)` &lt;chr&gt;, `Labour force
+## #   participation (female/male pop. %)` &lt;chr&gt;, `Agricultural production index
+## #   (2004-2006=100)` &lt;dbl&gt;, `Food production index (2004-2006=100)` &lt;dbl&gt;,
+## #   `International trade: Exports (million US$)` &lt;chr&gt;, `International trade:
+## #   Imports (million US$)` &lt;chr&gt;, `International trade: Balance (million
+## #   US$)` &lt;chr&gt;, `Balance of payments, current account (million US$)` &lt;chr&gt;,
+## #   `Population growth rate (average annual %)` &lt;chr&gt;, `Urban population (% of
+## #   total population)` &lt;dbl&gt;, `Urban population growth rate (average annual
+## #   %)` &lt;chr&gt;, `Fertility rate, total (live births per woman)` &lt;chr&gt;, `Life
+## #   expectancy at birth (females/males, years)` &lt;chr&gt;, `Population age
+## #   distribution (0-14 / 60+ years, %)` &lt;chr&gt;, `International migrant stock
+## #   (000/% of total pop.)` &lt;chr&gt;, `Refugees and others of concern to UNHCR (in
+## #   thousands)` &lt;chr&gt;, `Infant mortality rate (per 1000 live births` &lt;chr&gt;,
+## #   `Health: Total expenditure (% of GDP)` &lt;dbl&gt;, `Health: Physicians (per 1000
+## #   pop.)` &lt;chr&gt;, `Education: Government expenditure (% of GDP)` &lt;chr&gt;,
+## #   `Education: Primary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;,
+## #   `Education: Secondary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;,
+## #   `Education: Tertiary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;, `Seats
+## #   held by women in national parliaments %` &lt;dbl&gt;, `Mobile-cellular
+## #   subscriptions (per 100 inhabitants)` &lt;chr&gt;, `Mobile-cellular subscriptions
+## #   (per 100 inhabitants)_1` &lt;chr&gt;, `Individuals using the Internet (per 100
+## #   inhabitants)` &lt;dbl&gt;, `Threatened species (number)` &lt;chr&gt;, `Forested area (%
+## #   of land area)` &lt;chr&gt;, `CO2 emission estimates (million tons/tons per
+## #   capita)` &lt;dbl&gt;, `Energy production, primary (Petajoules)` &lt;dbl&gt;, `Energy
+## #   supply per capita (Gigajoules)` &lt;chr&gt;, `Pop. using improved drinking water
+## #   (urban/rural, %)` &lt;chr&gt;, `Pop. using improved sanitation facilities
+## #   (urban/rural, %)` &lt;chr&gt;, `Net Official Development Assist. received (% of
+## #   GNI)` &lt;dbl&gt;</code></pre>
+<pre class="r"><code>untidy_happy %&gt;% pivot_longer(1:155, names_to = &quot;Happiness.Rank&quot;, 
+    values_to = &quot;country&quot;) %&gt;% select(country, Happiness.Rank, 
+    everything()) %&gt;% na.omit()</code></pre>
+<pre><code>## # A tibble: 155 x 12
+##    country Happiness.Rank Happiness.Score Whisker.high Whisker.low
+##    &lt;chr&gt;   &lt;chr&gt;                    &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;
+##  1 Norway  1                         7.54         7.59        7.48
+##  2 Denmark 2                         7.52         7.58        7.46
+##  3 Iceland 3                         7.50         7.62        7.39
+##  4 Switze… 4                         7.49         7.56        7.43
+##  5 Finland 5                         7.47         7.53        7.41
+##  6 Nether… 6                         7.38         7.43        7.33
+##  7 Canada  7                         7.32         7.38        7.25
+##  8 New Ze… 8                         7.31         7.38        7.25
+##  9 Sweden  9                         7.28         7.34        7.22
+## 10 Austra… 10                        7.28         7.36        7.21
+## # … with 145 more rows, and 7 more variables: Economy..GDP.per.Capita. &lt;dbl&gt;,
+## #   Family &lt;dbl&gt;, Health..Life.Expectancy. &lt;dbl&gt;, Freedom &lt;dbl&gt;,
+## #   Generosity &lt;dbl&gt;, Trust..Government.Corruption. &lt;dbl&gt;,
+## #   Dystopia.Residual &lt;dbl&gt;</code></pre>
 </div>
 <div id="joiningmerging" class="section level4">
 <h4>Joining/Merging</h4>
-<pre class="r"><code># your joining code
-
-# your joining code</code></pre>
+<pre class="r"><code># re-coding variables
+profile &lt;- profile %&gt;% mutate(country = case_when(country == 
+    &quot;Russian Federation&quot; ~ &quot;Russia&quot;, country == &quot;United States of America&quot; ~ 
+    &quot;United States&quot;, country == &quot;China, Hong Kong SAR&quot; ~ &quot;Hong Kong S.A.R., China&quot;, 
+    country == &quot;Bolivia (Plurinational State of)&quot; ~ &quot;Bolivia&quot;, 
+    country == &quot;Venezuela (Bolivarian Republic of)&quot; ~ &quot;Venezuela&quot;, 
+    country == &quot;Viet Nam&quot; ~ &quot;Vietnam&quot;, country == &quot;Iran (Islamic Republic of)&quot; ~ 
+        &quot;Iran&quot;, country == &quot;Czechia&quot; ~ &quot;Czech Republic&quot;, country == 
+        &quot;Republic of Korea&quot; ~ &quot;South Korea&quot;, country == &quot;Republic of Moldova&quot; ~ 
+        &quot;Moldova&quot;, country == &quot;United Republic of Tanzania&quot; ~ 
+        &quot;Tanzania&quot;, country == &quot;Democratic Republic of the Congo&quot; ~ 
+        &quot;Congo (Kinshasa)&quot;, country == &quot;Congo&quot; ~ &quot;Congo (Brazzaville)&quot;, 
+    country == &quot;Syrian Arab Republic&quot; ~ &quot;Syria&quot;, TRUE ~ country))
+profile</code></pre>
+<pre><code>## # A tibble: 229 x 50
+##    country Region `Surface area (… `Population in … `Population den…
+##    &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;                       &lt;dbl&gt;            &lt;dbl&gt;
+##  1 Afghan… South… 652864                      35530             54.4
+##  2 Albania South… 28748                        2930            107. 
+##  3 Algeria North… 2381741                     41318             17.3
+##  4 Americ… Polyn… 199                            56            278. 
+##  5 Andorra South… 468                            77            164. 
+##  6 Angola  Middl… 1246700                     29784             23.9
+##  7 Anguil… Carib… 91                             15            166. 
+##  8 Antigu… Carib… 442                           102            232. 
+##  9 Argent… South… 2780400                     44271             16.2
+## 10 Armenia Weste… 29743                        2930            103. 
+## # … with 219 more rows, and 45 more variables: `Sex ratio (m per 100 f,
+## #   2017)` &lt;dbl&gt;, `GDP: Gross domestic product (million current US$)` &lt;dbl&gt;,
+## #   `GDP growth rate (annual %, const. 2005 prices)` &lt;chr&gt;, `GDP per capita
+## #   (current US$)` &lt;dbl&gt;, `Economy: Agriculture (% of GVA)` &lt;chr&gt;, `Economy:
+## #   Industry (% of GVA)` &lt;dbl&gt;, `Economy: Services and other activity (% of
+## #   GVA)` &lt;dbl&gt;, `Employment: Agriculture (% of employed)` &lt;chr&gt;, `Employment:
+## #   Industry (% of employed)` &lt;chr&gt;, `Employment: Services (% of
+## #   employed)` &lt;chr&gt;, `Unemployment (% of labour force)` &lt;chr&gt;, `Labour force
+## #   participation (female/male pop. %)` &lt;chr&gt;, `Agricultural production index
+## #   (2004-2006=100)` &lt;dbl&gt;, `Food production index (2004-2006=100)` &lt;dbl&gt;,
+## #   `International trade: Exports (million US$)` &lt;chr&gt;, `International trade:
+## #   Imports (million US$)` &lt;chr&gt;, `International trade: Balance (million
+## #   US$)` &lt;chr&gt;, `Balance of payments, current account (million US$)` &lt;chr&gt;,
+## #   `Population growth rate (average annual %)` &lt;chr&gt;, `Urban population (% of
+## #   total population)` &lt;dbl&gt;, `Urban population growth rate (average annual
+## #   %)` &lt;chr&gt;, `Fertility rate, total (live births per woman)` &lt;chr&gt;, `Life
+## #   expectancy at birth (females/males, years)` &lt;chr&gt;, `Population age
+## #   distribution (0-14 / 60+ years, %)` &lt;chr&gt;, `International migrant stock
+## #   (000/% of total pop.)` &lt;chr&gt;, `Refugees and others of concern to UNHCR (in
+## #   thousands)` &lt;chr&gt;, `Infant mortality rate (per 1000 live births` &lt;chr&gt;,
+## #   `Health: Total expenditure (% of GDP)` &lt;dbl&gt;, `Health: Physicians (per 1000
+## #   pop.)` &lt;chr&gt;, `Education: Government expenditure (% of GDP)` &lt;chr&gt;,
+## #   `Education: Primary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;,
+## #   `Education: Secondary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;,
+## #   `Education: Tertiary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;, `Seats
+## #   held by women in national parliaments %` &lt;dbl&gt;, `Mobile-cellular
+## #   subscriptions (per 100 inhabitants)` &lt;chr&gt;, `Mobile-cellular subscriptions
+## #   (per 100 inhabitants)_1` &lt;chr&gt;, `Individuals using the Internet (per 100
+## #   inhabitants)` &lt;dbl&gt;, `Threatened species (number)` &lt;chr&gt;, `Forested area (%
+## #   of land area)` &lt;chr&gt;, `CO2 emission estimates (million tons/tons per
+## #   capita)` &lt;dbl&gt;, `Energy production, primary (Petajoules)` &lt;dbl&gt;, `Energy
+## #   supply per capita (Gigajoules)` &lt;chr&gt;, `Pop. using improved drinking water
+## #   (urban/rural, %)` &lt;chr&gt;, `Pop. using improved sanitation facilities
+## #   (urban/rural, %)` &lt;chr&gt;, `Net Official Development Assist. received (% of
+## #   GNI)` &lt;dbl&gt;</code></pre>
+<pre class="r"><code>anti_join(happy, profile, by = c(Country = &quot;country&quot;))</code></pre>
+<pre><code>## # A tibble: 6 x 12
+##   Country Happiness.Rank Happiness.Score Whisker.high Whisker.low
+##   &lt;chr&gt;            &lt;dbl&gt;           &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;
+## 1 Taiwan…             33            6.42         6.49        6.35
+## 2 North …             61            5.81         5.90        5.72
+## 3 Kosovo              78            5.28         5.36        5.19
+## 4 Macedo…             92            5.18         5.27        5.08
+## 5 Palest…            103            4.78         4.88        4.67
+## 6 Ivory …            128            4.18         4.28        4.08
+## # … with 7 more variables: Economy..GDP.per.Capita. &lt;dbl&gt;, Family &lt;dbl&gt;,
+## #   Health..Life.Expectancy. &lt;dbl&gt;, Freedom &lt;dbl&gt;, Generosity &lt;dbl&gt;,
+## #   Trust..Government.Corruption. &lt;dbl&gt;, Dystopia.Residual &lt;dbl&gt;</code></pre>
+<pre class="r"><code>anti_join(profile, happy, by = c(country = &quot;Country&quot;))</code></pre>
+<pre><code>## # A tibble: 80 x 50
+##    country Region `Surface area (… `Population in … `Population den…
+##    &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;                       &lt;dbl&gt;            &lt;dbl&gt;
+##  1 Americ… Polyn… 199                            56            278. 
+##  2 Andorra South… 468                            77            164. 
+##  3 Anguil… Carib… 91                             15            166. 
+##  4 Antigu… Carib… 442                           102            232. 
+##  5 Aruba   Carib… 180                           105            585. 
+##  6 Bahamas Carib… 13940                         395             39.5
+##  7 Barbad… Carib… 431                           286            664. 
+##  8 Bermuda North… 53                             61           1227  
+##  9 Bonair… Carib… -99                            25             77.4
+## 10 Britis… Carib… 151                            31            208  
+## # … with 70 more rows, and 45 more variables: `Sex ratio (m per 100 f,
+## #   2017)` &lt;dbl&gt;, `GDP: Gross domestic product (million current US$)` &lt;dbl&gt;,
+## #   `GDP growth rate (annual %, const. 2005 prices)` &lt;chr&gt;, `GDP per capita
+## #   (current US$)` &lt;dbl&gt;, `Economy: Agriculture (% of GVA)` &lt;chr&gt;, `Economy:
+## #   Industry (% of GVA)` &lt;dbl&gt;, `Economy: Services and other activity (% of
+## #   GVA)` &lt;dbl&gt;, `Employment: Agriculture (% of employed)` &lt;chr&gt;, `Employment:
+## #   Industry (% of employed)` &lt;chr&gt;, `Employment: Services (% of
+## #   employed)` &lt;chr&gt;, `Unemployment (% of labour force)` &lt;chr&gt;, `Labour force
+## #   participation (female/male pop. %)` &lt;chr&gt;, `Agricultural production index
+## #   (2004-2006=100)` &lt;dbl&gt;, `Food production index (2004-2006=100)` &lt;dbl&gt;,
+## #   `International trade: Exports (million US$)` &lt;chr&gt;, `International trade:
+## #   Imports (million US$)` &lt;chr&gt;, `International trade: Balance (million
+## #   US$)` &lt;chr&gt;, `Balance of payments, current account (million US$)` &lt;chr&gt;,
+## #   `Population growth rate (average annual %)` &lt;chr&gt;, `Urban population (% of
+## #   total population)` &lt;dbl&gt;, `Urban population growth rate (average annual
+## #   %)` &lt;chr&gt;, `Fertility rate, total (live births per woman)` &lt;chr&gt;, `Life
+## #   expectancy at birth (females/males, years)` &lt;chr&gt;, `Population age
+## #   distribution (0-14 / 60+ years, %)` &lt;chr&gt;, `International migrant stock
+## #   (000/% of total pop.)` &lt;chr&gt;, `Refugees and others of concern to UNHCR (in
+## #   thousands)` &lt;chr&gt;, `Infant mortality rate (per 1000 live births` &lt;chr&gt;,
+## #   `Health: Total expenditure (% of GDP)` &lt;dbl&gt;, `Health: Physicians (per 1000
+## #   pop.)` &lt;chr&gt;, `Education: Government expenditure (% of GDP)` &lt;chr&gt;,
+## #   `Education: Primary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;,
+## #   `Education: Secondary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;,
+## #   `Education: Tertiary gross enrol. ratio (f/m per 100 pop.)` &lt;chr&gt;, `Seats
+## #   held by women in national parliaments %` &lt;dbl&gt;, `Mobile-cellular
+## #   subscriptions (per 100 inhabitants)` &lt;chr&gt;, `Mobile-cellular subscriptions
+## #   (per 100 inhabitants)_1` &lt;chr&gt;, `Individuals using the Internet (per 100
+## #   inhabitants)` &lt;dbl&gt;, `Threatened species (number)` &lt;chr&gt;, `Forested area (%
+## #   of land area)` &lt;chr&gt;, `CO2 emission estimates (million tons/tons per
+## #   capita)` &lt;dbl&gt;, `Energy production, primary (Petajoules)` &lt;dbl&gt;, `Energy
+## #   supply per capita (Gigajoules)` &lt;chr&gt;, `Pop. using improved drinking water
+## #   (urban/rural, %)` &lt;chr&gt;, `Pop. using improved sanitation facilities
+## #   (urban/rural, %)` &lt;chr&gt;, `Net Official Development Assist. received (% of
+## #   GNI)` &lt;dbl&gt;</code></pre>
+<pre class="r"><code>joined &lt;- inner_join(happy, profile, by = c(Country = &quot;country&quot;)) %&gt;% 
+    select(Country, Region, everything())
+joined</code></pre>
+<pre><code>## # A tibble: 149 x 61
+##    Country Region Happiness.Rank Happiness.Score Whisker.high Whisker.low
+##    &lt;chr&gt;   &lt;chr&gt;           &lt;dbl&gt;           &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;
+##  1 Norway  North…              1            7.54         7.59        7.48
+##  2 Denmark North…              2            7.52         7.58        7.46
+##  3 Iceland North…              3            7.50         7.62        7.39
+##  4 Switze… Weste…              4            7.49         7.56        7.43
+##  5 Finland North…              5            7.47         7.53        7.41
+##  6 Nether… Weste…              6            7.38         7.43        7.33
+##  7 Canada  North…              7            7.32         7.38        7.25
+##  8 New Ze… Ocean…              8            7.31         7.38        7.25
+##  9 Sweden  North…              9            7.28         7.34        7.22
+## 10 Austra… Ocean…             10            7.28         7.36        7.21
+## # … with 139 more rows, and 55 more variables: Economy..GDP.per.Capita. &lt;dbl&gt;,
+## #   Family &lt;dbl&gt;, Health..Life.Expectancy. &lt;dbl&gt;, Freedom &lt;dbl&gt;,
+## #   Generosity &lt;dbl&gt;, Trust..Government.Corruption. &lt;dbl&gt;,
+## #   Dystopia.Residual &lt;dbl&gt;, `Surface area (km2)` &lt;chr&gt;, `Population in
+## #   thousands (2017)` &lt;dbl&gt;, `Population density (per km2, 2017)` &lt;dbl&gt;, `Sex
+## #   ratio (m per 100 f, 2017)` &lt;dbl&gt;, `GDP: Gross domestic product (million
+## #   current US$)` &lt;dbl&gt;, `GDP growth rate (annual %, const. 2005
+## #   prices)` &lt;chr&gt;, `GDP per capita (current US$)` &lt;dbl&gt;, `Economy: Agriculture
+## #   (% of GVA)` &lt;chr&gt;, `Economy: Industry (% of GVA)` &lt;dbl&gt;, `Economy: Services
+## #   and other activity (% of GVA)` &lt;dbl&gt;, `Employment: Agriculture (% of
+## #   employed)` &lt;chr&gt;, `Employment: Industry (% of employed)` &lt;chr&gt;,
+## #   `Employment: Services (% of employed)` &lt;chr&gt;, `Unemployment (% of labour
+## #   force)` &lt;chr&gt;, `Labour force participation (female/male pop. %)` &lt;chr&gt;,
+## #   `Agricultural production index (2004-2006=100)` &lt;dbl&gt;, `Food production
+## #   index (2004-2006=100)` &lt;dbl&gt;, `International trade: Exports (million
+## #   US$)` &lt;chr&gt;, `International trade: Imports (million US$)` &lt;chr&gt;,
+## #   `International trade: Balance (million US$)` &lt;chr&gt;, `Balance of payments,
+## #   current account (million US$)` &lt;chr&gt;, `Population growth rate (average
+## #   annual %)` &lt;chr&gt;, `Urban population (% of total population)` &lt;dbl&gt;, `Urban
+## #   population growth rate (average annual %)` &lt;chr&gt;, `Fertility rate, total
+## #   (live births per woman)` &lt;chr&gt;, `Life expectancy at birth (females/males,
+## #   years)` &lt;chr&gt;, `Population age distribution (0-14 / 60+ years, %)` &lt;chr&gt;,
+## #   `International migrant stock (000/% of total pop.)` &lt;chr&gt;, `Refugees and
+## #   others of concern to UNHCR (in thousands)` &lt;chr&gt;, `Infant mortality rate
+## #   (per 1000 live births` &lt;chr&gt;, `Health: Total expenditure (% of GDP)` &lt;dbl&gt;,
+## #   `Health: Physicians (per 1000 pop.)` &lt;chr&gt;, `Education: Government
+## #   expenditure (% of GDP)` &lt;chr&gt;, `Education: Primary gross enrol. ratio (f/m
+## #   per 100 pop.)` &lt;chr&gt;, `Education: Secondary gross enrol. ratio (f/m per 100
+## #   pop.)` &lt;chr&gt;, `Education: Tertiary gross enrol. ratio (f/m per 100
+## #   pop.)` &lt;chr&gt;, `Seats held by women in national parliaments %` &lt;dbl&gt;,
+## #   `Mobile-cellular subscriptions (per 100 inhabitants)` &lt;chr&gt;,
+## #   `Mobile-cellular subscriptions (per 100 inhabitants)_1` &lt;chr&gt;, `Individuals
+## #   using the Internet (per 100 inhabitants)` &lt;dbl&gt;, `Threatened species
+## #   (number)` &lt;chr&gt;, `Forested area (% of land area)` &lt;chr&gt;, `CO2 emission
+## #   estimates (million tons/tons per capita)` &lt;dbl&gt;, `Energy production,
+## #   primary (Petajoules)` &lt;dbl&gt;, `Energy supply per capita (Gigajoules)` &lt;chr&gt;,
+## #   `Pop. using improved drinking water (urban/rural, %)` &lt;chr&gt;, `Pop. using
+## #   improved sanitation facilities (urban/rural, %)` &lt;chr&gt;, `Net Official
+## #   Development Assist. received (% of GNI)` &lt;dbl&gt;</code></pre>
 <p>Discussions of joining here. Feel encouraged to break up into more than once code chunk and discuss each in turn.</p>
 </div>
 <div id="wrangling" class="section level4">
 <h4>Wrangling</h4>
+<pre class="r"><code>joined %&gt;% group_by(Region) %&gt;% summarize_at(c(&quot;Happiness.Score&quot;, 
+    &quot;GDP per capita (current US$)&quot;), .funs = list(mean = mean, 
+    sd = sd)) %&gt;% arrange(desc(Happiness.Score_mean))</code></pre>
+<pre><code>## # A tibble: 19 x 5
+##    Region  Happiness.Score_… `GDP per capita … Happiness.Score… `GDP per capita…
+##    &lt;chr&gt;               &lt;dbl&gt;             &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;
+##  1 Oceania              7.30            44823.           0.0212            9233.
+##  2 Northe…              7.15            49630.           0.228             9085.
+##  3 Wester…              7.00            55387.           0.349            24770.
+##  4 Northe…              6.84            42098.           0.774            20671.
+##  5 Centra…              6.22             6348.           0.560             4180.
+##  6 SouthA…              6.10             8873.           0.512             4490.
+##  7 Easter…              5.60             9292.           0.728             5415.
+##  8 Centra…              5.53             4330.           0.469             4152.
+##  9 Southe…              5.53            15338.           0.572             9489.
+## 10 Easter…              5.49            23308.           0.400            16699.
+## 11 South-…              5.44             9808.           0.866            17383.
+## 12 Wester…              5.37            17999.           1.09             19654.
+## 13 Caribb…              5.08             7834.           1.07              7858.
+## 14 Northe…              5.05             3609.           0.620             1183.
+## 15 Southe…              4.64             2159.           0.463             1605.
+## 16 Southe…              4.24             4437.           0.538             2434.
+## 17 Easter…              4.12             1300.           0.737             2259.
+## 18 Wester…              4.10              926.           0.504              633.
+## 19 Middle…              4.02             2466.           0.660             2850.</code></pre>
 <pre class="r"><code># your wrangling code
-
-# your wrangling code
 
 # your wrangling code</code></pre>
 <p>Your discussion of wrangling section here. Feel encouraged to break up into more than once code chunk and discuss each in turn.</p>

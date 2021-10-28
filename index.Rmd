@@ -23,14 +23,15 @@ tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
 
 #### Introduction 
 
-Paragraph or two introducing your data sets and variables, why they are interesting to you, etc.
+The data sets used for this project are the World Happiness Report and Socio-Economic Country Profiles. Both of the data are from 2017, so the values can be more easily compared. The World Happiness Report contains data measuring happiness in many different countries, using happiness scores based on different factors, as well as rankings of happiness among the countries. The Socio-Economic Country Profiles data set contains different measures for countries relating to the economy, health, employment, demographics, and more. These two data sets are interesting to compare because different factors, such as GDP and employment rates, can be compared to the happiness scores of different countries to see how they are related, and which factors have the greatest effect on happiness. Some things that are expected are that countries with healthier populations, smaller unemployment rates, and a higher GDP would have higher happiness scores. 
 
 ```{R}
 library(tidyverse)
+library(knitr)
 happy <- read_csv("happy.csv")
 profile <- read_csv("profile.csv")
 
-head(happy)
+profile %>% distinct(country)
 ```
 
 #### Tidying: Reshaping
@@ -38,28 +39,67 @@ head(happy)
 If your datasets are tidy already, demonstrate that you can reshape data with pivot wider/longer here (e.g., untidy and then retidy). Alternatively, it may be easier to wait until the wrangling section so you can reshape your summary statistics. Note here if you are going to do this.
 
 ```{R}
-# your tidying code (if applicable; can also wait until wrangling section)
+#untidying
+untidy_profile <- profile %>% pivot_wider(names_from="Region", values_from="country") %>% 
+  select(49:70, everything())
+untidy_profile
+
+untidy_happy <- happy %>% pivot_wider(names_from="Happiness.Rank", values_from="Country") %>% 
+  select(11:165, everything())
+untidy_happy
+
+#retidying
+untidy_profile %>% pivot_longer(1:22, names_to="Region", values_to="country") %>%
+  select(country, Region, everything()) %>% na.omit()
+untidy_happy %>% pivot_longer(1:155, names_to="Happiness.Rank", values_to="country") %>%
+  select(country, Happiness.Rank, everything()) %>% na.omit()
+
+profile %>% separate(`Labour force participation (female/male pop. %)`, into=c("Laborforce_participation_women_%","Laborforce_participation_men_%"), sep="/") %>%
+  separate(`Life expectancy at birth (females/males, years)`, into=c("Lifeexpectancy_atbirth_females_yrs", "Lifeexpectancy_atbirth_males_yrs")) %>% separate(`Population age distribution (0-14 / 60+ years, %)`, into=c("Pop_age_dist_0-14yrs_%", "Pop_age_dist_60+yrs_%")) %>% separate(`Pop. using improved drinking water (urban/rural, %)`, into=c("Pop_improveddrinkingwater_urban_%", "Pop_improveddrinkingwater_rural_%")) -> profile
+profile
 ```
 
+Since both data sets were already pretty tidy, the profile data set was first untidied by placing each region name as a column, with the countries as the values. This created many more columns with a lot of NA values, and the variable "Region" was in the column instead of as a variable in the row. This makes it really hard to compare countries of different regions. The profile data set was then tidied by pivoting longer and creating a Region column with all of the regions as values. In the happy data set, it was pivoted wider, creating one column for each country. This is messy and difficult to interpret, so it was pivoted wider to list the countries under one "Country" column. 
+
+After the untidying and retidying was done, some of the variables in the profile data set were separated into two variables. Some of the variables in this data set had two different numbers listed as one, such as the life expectancy at birth being listed as females/males. This variable cannot be interpreted for each gender since both values are listed as one, so it was separated into the life expectancy at birth for men and women separately, separating the values by the forward slash. This separation of variables was done for many that listed two different values as one, in order to create a tidier data set that can be interpreted more easily. 
     
 #### Joining/Merging
 
 ```{R}
-# your joining code
+#re-coding variables
+profile <- profile %>% mutate(country=case_when(country=="Russian Federation"~"Russia", country=="United States of America"~"United States", country=="China, Hong Kong SAR"~"Hong Kong S.A.R., China", country=="Bolivia (Plurinational State of)"~"Bolivia", country=="Venezuela (Bolivarian Republic of)"~"Venezuela", country=="Viet Nam"~"Vietnam", country=="Iran (Islamic Republic of)"~"Iran", country=="Czechia"~"Czech Republic", country=="Republic of Korea"~"South Korea", country=="Republic of Moldova"~"Moldova", country=="United Republic of Tanzania"~"Tanzania", country=="Democratic Republic of the Congo"~"Congo (Kinshasa)", country=="Congo"~"Congo (Brazzaville)", country=="Syrian Arab Republic"~"Syria",TRUE~country))
+profile
 
-# your joining code
+
+anti_join(happy, profile, by=c("Country"="country"))
+anti_join(profile, happy, by=c("country"="Country"))
+joined <- inner_join(happy, profile, by=c("Country"="country")) %>% select(Country, Region, everything())
+joined
 ```
 
-Discussions of joining here. Feel encouraged to break up into more than once code chunk and discuss each in turn.
+Before joining could be performed, it was noticed that the same countries are listed under different names in both data sets. Country names that were found to differ were changed in the profile data set to match the country names of the happy data set. For example, Russia is listed as "Russia" in the happy data set, but it is listed as "Russian Federation" in the profile data set, so it was changed to match the happy data set. An anti-join was used to easily identify and find which countries were listed under different names in order to change them. Once this process was complete, an inner join was performed to join both data sets by the country variable and exclude any rows with no matches. 
 
 ####  Wrangling
 
 ```{R}
-# your wrangling code
+#use filter, select, arrange, group_by, mutate, summarize
+#stringr function such as str_detect or str_replace_all with regex
+#For your categorical variables, report the frequencies/counts of each level.
+#report the number of missing values (NAs) for each variable
 
-# your wrangling code
+joined <- joined %>% mutate(Country.size= ifelse(`Population in thousands (2017)`>mean(`Population in thousands (2017)`), "large", "small"))
+joined %>% select(1,15,66)
 
-# your wrangling code
+joined %>% group_by(Region) %>% summarize(mean_GDP=mean(`GDP per capita (current US$)`), mean_HappyScore=mean(Happiness.Score)) %>% arrange(desc(mean_HappyScore))
+
+joined %>% filter(Region=="NorthernAmerica" | Region=="CentralAmerica" | Region=="SouthAmerica" | Region=="Caribbean") %>% arrange(Happiness.Rank) %>% select(1:3, 46)
+
+joined %>% filter(Region !="NorthernAmerica" & Region !="CentralAmerica" & Region !="SouthAmerica" & Region !="Caribbean") %>% arrange(Happiness.Rank) %>% select(1:3, 46)
+
+joined %>% filter(`Health: Physicians (per 1000 pop.)`=="...") %>% mutate(Physicians.per.1000= str_replace(`Health: Physicians (per 1000 pop.)`, "...", NA)) 
+
+joined %>% group_by(Region) %>% summarize(n())
+joined %>% group_by(Country.size) %>% summarize(n())
 ```
 
 Your discussion of wrangling section here. Feel encouraged to break up into more than once code chunk and discuss each in turn.
@@ -68,7 +108,7 @@ Your discussion of wrangling section here. Feel encouraged to break up into more
 #### Visualizing
 
 ```{R}
-# your plot 1
+joined %>% ggplot(aes(Happiness.Score, `GDP per capita (current US$)`)) + geom_point(aes(color=Region)) + geom_smooth()
 ```
 
 Your discussion of plot 1
